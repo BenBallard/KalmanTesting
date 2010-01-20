@@ -10,9 +10,9 @@
 
 %Initalization
 %/home/ben/workspace/NewPIDForward
-cd /home/ben/workspace/OctaveScript
+cd /home/ben/Projects/KalmanTesting/OctaveScript
 
-FolderName = "/home/ben/workspace/Backward";
+FolderName = "/home/ben/Projects/KalmanTesting/Backward";
 data = LoadData(FolderName);
 DataLength = size(data{1})(1)
 
