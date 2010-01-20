@@ -15,13 +15,19 @@ YawTDF = open('YawTD','w')
 
 lwsF = open('LeftWheelSpeed','w')
 rwsF = open('RightWheelSpeed','w')
-
+LwtF = open('LeftWheelTick','w')
+RwtF = open('RightWheelTick','w')
 
 
 for line in dataFile:
 	value = " "
 	if "=" in line:
 		value = line.split("=")[1].strip() + "\n"
+	if "Lwt = " in line:
+		LwtF.write(value)
+	
+	if "Rwt = " in line:
+		RwtF.write(value)
 
 	if "OX =" in line:
 		OdomXF.write(value)
