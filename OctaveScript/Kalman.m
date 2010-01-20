@@ -13,7 +13,7 @@
 cd /home/ben/Projects/KalmanTesting/OctaveScript
 
 FolderName = "/home/ben/Projects/KalmanTesting/Turning";
-data = LoadData(FolderName,12);
+data = LoadData(FolderName,10);
 DataLength = size(data{1})(1)
 
 State = zeros(3,1)
@@ -21,12 +21,21 @@ PredictedState = zeros(3,1)
 
 time = .02  % = 20 milliseconds
 track = 0.5677
-LeftWTpM = 0.00086891
-RightWTpM = 0.000870814
+
+H = zeros(4,3);
+H(1,1)=1;
+H(2,2)=1;
+H(3,3)=1;
+H(4,3)=1;
+
+G=zeros(3,3);
+G(1,1)=1;
+G(2,2)=1;
+G(3,3)=1;
 
 
-H = zeros(8,6)
-H(1,1)=3
+Vt = zero(3,2);
+
 
 
 
@@ -35,15 +44,20 @@ R=0
 Z=0
 X=0
 
+
+%Assume that the system starts up stoped 
+%Left Wheel speed Predicted
 LwP=0
+%Right Wheel Speed Predicted
 RwP=0
-LeftPWT = data{11}(1);
-RightPWT = data{12}(1);
+
+
 OdomTheta=0
 OdomX=0
 OdomY=0
 OdomListX = 0 
 OdomListY = 0
+
 for x = 2:DataLength 
 	odomX = data{1}(x);
 	odomY = data{2}(x);
@@ -55,44 +69,16 @@ for x = 2:DataLength
 	yawTD = data{8}(x);
 	LeftWS = data{9}(x);
 	RightWS = data{10}(x);
-	RightWT = data{12}(x);
-	LeftWT = data{11}(x);
-	
-	%(request - current) .* ( 1-1./exp(x)).+ current
-	
-	%###################################################################
-	%###################################################################
-	%This is some shit that i made to figure out where the tire is post  processing to compare agains the estimated veloctiy fo the tires
-	LwC(x) = ((odomT*track+2*odomX)/2)*50;
-	RwC(x) = (2 * odomX - (odomT*track+2*odomX)/2)*50;
-	LwC(x) = ((LeftWT - LeftPWT) * LeftWTpM)/time;
-	RwC(x) = ((RightWT - RightPWT) * RightWTpM)/time;
-	LeftPWT = LeftWT;
-	RightPWT = RightWT;
-	%###################################################################
-	%###################################################################
 	
 	
 	
 	% this is the prediction step That predicts what the current speed of the vechile is
 	%This constant descripes the exponential decay.  A larger constant a slower increase to the given speed
 	constant = 0.0525;
-	%constant = 0.06;
+	
 	LwP = (LeftWS-LwP)*(1-1/exp(constant))+LwP;
 	RwP = (RightWS-RwP)*(1-1/exp(constant))+RwP;
 	
-	
-	
-	
-	%This caluclates t the diffence between what really happened and what was predicted.
-	LwCD(x) = LwC(x)-LwP;
-	RwCD(x) = RwC(x)-RwP;
-	
-	%LwCD(x) = LeftWS-LwP;
-	%RwCD(x) = RightWS-RwP;
-	
-	RwG(x) = RwP;
-	LwG(x) = LwP;
 
 	
 	
@@ -114,18 +100,31 @@ for x = 2:DataLength
 	PredictedState(3,1,x) = PredictedTheta;
 	PredictedX=0;
 	PredictedY=0;
-	if ((RightWS-LeftWS) != 0)
+	if ((RwP-LwP) != 0)
+		
 		ChangeFactor = (track *(LwP + RwP))/(2*(LwP - RwP));
 		PredictedX = PredictedLastX + ChangeFactor*( sin(PredictedTheta) - sin(PredictedLastTheta));
 		PredictedY = PredictedLastY+ ChangeFactor *( cos(PredictedTheta) - cos(PredictedLastTheta));
+		G(1,3)=PredictedY;
+		G(2,3) = PredictedX;
+		
+		
 		%Diff = (LastX +RightWS *time*cos(PredictedTheta)) + Diff
 		%R = PredictedX + R;
+		
+		
+		
 	else
 		PredictedX = PredictedLastX + RwP *time*cos(PredictedLastTheta);
 		PredictedY = PredictedLastY - RwP*time*sin(PredictedLastTheta);
 		%Diff = (LastX +RightWS *time*cos(PredictedTheta)) + Diff
 		
 		%R = R +(LastX +RightWS *time*cos(PredictedTheta))
+		
+		
+		
+		
+		
 	endif
 	
 	OdomTheta = Angle(OdomTheta + odomT)
