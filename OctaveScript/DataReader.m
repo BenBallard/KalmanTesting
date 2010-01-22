@@ -12,7 +12,8 @@
 %/home/ben/workspace/NewPIDForward
 cd /home/ben/Projects/KalmanTesting/OctaveScript
 
-FolderName = "/home/ben/Projects/KalmanTesting/Turning";
+
+FolderName = "/home/ben/Projects/KalmanTesting/Backward";
 data = LoadData(FolderName,12);
 DataLength = size(data{1})(1)
 
@@ -139,7 +140,7 @@ for x = 2:DataLength
 	
 	
 	
-	PredictedTheta;
+	PredictedTheta
 	PredictedX
 	PredictedY
 	PredictedState(1,1,x) = PredictedX;
