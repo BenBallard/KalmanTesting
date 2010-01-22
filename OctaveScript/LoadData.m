@@ -1,5 +1,5 @@
-function data = LoadData(Folder)
-  if (nargin != 1)
+function data = LoadData(Folder,FileCount)
+  if (nargin != 2)
     error ("usage: LoadData(Folder)");
   endif
 printf("%s",Folder)
@@ -16,7 +16,7 @@ filelist{10} = sprintf("%s/%s",Folder,"RightWheelSpeed");
 filelist{11} = sprintf("%s/%s",Folder,"LeftWheelTick");
 filelist{12} = sprintf("%s/%s",Folder,"RightWheelTick");
 data{1}=0;
-for x = 1:12
+for x = 1:FileCount
 	file = fopen(filelist{x},"r");
 	data{x} = fscanf(file,"%f");
 	fclose(file);
