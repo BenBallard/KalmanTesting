@@ -94,9 +94,6 @@ for x = 2:DataLength
 	
 	RwG(x) = RwP;
 	LwG(x) = LwP;
-
-	
-	
 	
 	%Run the kalman filter
 	

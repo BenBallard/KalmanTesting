@@ -16,8 +16,8 @@ FolderName = "/home/ben/Projects/KalmanTesting/Turning";
 data = LoadData(FolderName,10);
 DataLength = size(data{1})(1)
 
-State = zeros(3,1)
-PredictedState = zeros(3,1)
+State = zeros(3,1);
+PredictedState = zeros(3,1);
 
 time = .02  % = 20 milliseconds
 track = 0.5677
@@ -35,8 +35,6 @@ G(3,3)=1;
 
 
 Vt = zero(3,2);
-
-
 
 
 Diff = 0
@@ -89,43 +87,41 @@ for x = 2:DataLength
 	LastX = State(1,1);
 	LastY = State(2,1);
 	
-	PredictedLastTheta = PredictedState(3,1,x-1);
-	PredictedLastX = PredictedState(1,1,x-1);
-	PredictedLastY = PredictedState(2,1,x-1);	
+%	LastTheta = PredictedState(3,1,x-1);
+%	LastX = PredictedState(1,1,x-1);
+%	LastY = PredictedState(2,1,x-1);	
 	
 	%Do angle prediction
 	dTheta = ((LwP - RwP) * time)/track;
-	PredictedAngularVelocity = dTheta/time;
-	PredictedTheta = Angle(dTheta + PredictedLastTheta);
-	PredictedState(3,1,x) = PredictedTheta;
-	PredictedX=0;
-	PredictedY=0;
+	modelTheta = dTheta + LastTheta;
 	if ((RwP-LwP) != 0)
 		
 		ChangeFactor = (track *(LwP + RwP))/(2*(LwP - RwP));
-		PredictedX = PredictedLastX + ChangeFactor*( sin(PredictedTheta) - sin(PredictedLastTheta));
-		PredictedY = PredictedLastY+ ChangeFactor *( cos(PredictedTheta) - cos(PredictedLastTheta));
-		G(1,3)=PredictedY;
-		G(2,3) = PredictedX;
-		
-		
+		modelX = LastX + ChangeFactor*( sin(modelTheta) - sin(LastTheta));
+		modelY = LastY+ ChangeFactor *( cos(modelTheta) - cos(LastTheta));
+		%THIS HEADING MIGHT BE WRONG
+		G(1,3)=ChangeFactor * (-cos(lastTheta)+cos(modelTheta));
+		G(2,3) = ChangeFactor * (-sin(lastTheta)+sin(modelTheta));
 		%Diff = (LastX +RightWS *time*cos(PredictedTheta)) + Diff
 		%R = PredictedX + R;
-		
-		
-		
 	else
-		PredictedX = PredictedLastX + RwP *time*cos(PredictedLastTheta);
-		PredictedY = PredictedLastY - RwP*time*sin(PredictedLastTheta);
+		modelX = LastX + RwP *time*cos(LastTheta);
+		modelY = LastY - RwP*time*sin(LastTheta);
+		%THIS HEADING MIGHT BE WRONG
+		G(1,3)= -1*RwP*time*sin(LastTheta);
+		G(2,3) = RwP*time*cos(LastTheta);
 		%Diff = (LastX +RightWS *time*cos(PredictedTheta)) + Diff
-		
 		%R = R +(LastX +RightWS *time*cos(PredictedTheta))
-		
-		
-		
-		
-		
 	endif
+	
+	
+	%Note at this point modelTheta may not be witht the appropriate angles
+	
+	model = zeros(3,1)
+	model(1,1) = modelX;
+	model(2,1) = modelY;
+	model(3,1) = modelTheta;
+	
 	
 	OdomTheta = Angle(OdomTheta + odomT)
  	OdomX = OdomX + cos(OdomTheta)*odomX
@@ -147,8 +143,24 @@ for x = 2:DataLength
 	X = Angle(odomT + X);
 	Z=Z+odomX*cos(X);
 	
+	
+	Zsensed = zeros(4,1)
+	Zsensed(1,1)= odomX;
+	Zsensed(2,1)= odomY;
+	Zsensed(3,1)= odomT;
+	Zsensed(4,1)=  yawT;
+	
+	
+	
 	%plot(x, (request - current) .* ( 1-1./exp(x)).+ current)
 
+	
+	
+	
+		
+	State(3,1);
+	State(1,1);
+	State(2,1);
 	
 	
 	
