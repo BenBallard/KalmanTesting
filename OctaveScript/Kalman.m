@@ -16,7 +16,7 @@ FolderName = "/home/ben/Projects/KalmanTesting/Turning";
 data = LoadData(FolderName,10);
 DataLength = size(data{1})(1)
 
-State = zeros(3,1);
+state = zeros(3,1);
 PredictedState = zeros(3,1);
 
 time = .02  % = 20 milliseconds
@@ -100,9 +100,9 @@ for x = 2:DataLength
 	
 	%Run the kalman filter
 	
-	LastTheta =State(3,1);
-	LastX = State(1,1);
-	LastY = State(2,1);
+	LastTheta =state(3,1);
+	LastX = state(1,1);
+	LastY = state(2,1);
 	%LastY=modelY;
 	%LastX=modelX;
 	%LastTheta=modelTheta;
@@ -140,6 +140,8 @@ for x = 2:DataLength
 		%Diff = (LastX +RightWS *time*cos(PredictedTheta)) + Diff
 		%R = R +(LastX +RightWS *time*cos(PredictedTheta))
 	endif
+	%MODELX(x)=LastX;
+	%MODELY(x) = LastY;
 	
 	
 	
@@ -159,7 +161,7 @@ for x = 2:DataLength
 	
 	
 	%Basic odometry Stuff to comapre the kalman filter against.
-	;OdomTheta = Angle(OdomTheta + odomT);
+	OdomTheta = Angle(OdomTheta + odomT);
  	OdomX = OdomX+ cos(OdomTheta)*odomX;
  	OdomY = OdomY- sin(OdomTheta)*odomX ;
 	OdomListX(x) = OdomX;
@@ -169,30 +171,38 @@ for x = 2:DataLength
 	YawTheta = YawTheta + yawT;
 	
 	
-	%Placed the sensed values into an array
-	%Zsensed(1,1)= odomX+LastX
-	%Zsensed(2,1)= odomY+LastY
-	%Zsensed(3,1)= odomT+LastTheta
-	%Zsensed(4,1)=  yawT+LastTheta
+	OdomTheta = Angle(LastTheta + odomT);
+ 	RodomX = cos(OdomTheta)*odomX;
+ 	RodomY = sin(OdomTheta)*odomX ;
 	
-	Zsensed(1,1)=OdomX;
-	Zsensed(2,1)= OdomY;
-	Zsensed(3,1)= OdomTheta;
-	Zsensed(4,1)=  YawTheta
+	
+	
+	%Placed the sensed values into an array
+	Zsensed(1,1)= RodomX+LastX;
+	Zsensed(2,1)= -1*RodomY+LastY;
+	Zsensed(3,1)= LastTheta + odomT;
+	Zsensed(4,1)=  yawT+LastTheta;
+	MODELX(x) = RodomX+LastX;
+	MODELY(x)  = RodomY + LastY;
+	
+	%Zsensed(1,1)=OdomX;
+	%Zsensed(2,1)= OdomY;
+	%Zsensed(3,1)= OdomTheta;
+	%Zsensed(4,1)=  YawTheta;
 		
 	
 	%This is the Predict the estimated covariance
-	modelSTD=eye(3).*.05;
-	modelSTD(3,3)=.5;
+	modelSTD=eye(3).*.1;
+	modelSTD(3,3)=.1;
 	P=G*P*G'+modelSTD;
 	Y = Zsensed- H*state;
-	sensorSTD = eye(4).*.005;
+	sensorSTD = eye(4).*.02;
 	sensorSTD(3,3)=.3;
 	sensorSTD(4,4) = .04;
 	S = H*P*H'+sensorSTD;
 	K=P*H'*inv(S);
 	state=state+K*Y;
-	P=(eye(3)-K*H)*P
+	P=(eye(3)-K*H)*P;
 	
 	%Does this need to be done
 	%state(3,1)=Angle(state(3,1));
