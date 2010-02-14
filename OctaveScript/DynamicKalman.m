@@ -213,7 +213,7 @@ for x = 2:DataLength
 	P=(eye(3)-K*H)*P
 	
 
-	rP = 5;
+	rP = 1;
 	rPMO = 1 - rP; 
 	oldValue = RodomX;
 	RodomX = oldValue*rP *(rand(1)-.5) + oldValue;
@@ -236,7 +236,7 @@ for x = 2:DataLength
 	H(4,2)=1;
 
 	Y = Zsensed- H*state;
-	sensorSTD = eye(4).*.0055;
+	sensorSTD = eye(4).*.55;
 	sensorSTD(3,3)=.3;
 	sensorSTD(4,4) = .4;
 	S = H*P*H'+sensorSTD

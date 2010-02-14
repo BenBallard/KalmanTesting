@@ -12,7 +12,7 @@
 %/home/ben/workspace/NewPIDForward
 cd /home/ben/Projects/KalmanTesting/OctaveScript
 
-FolderName = "/home/ben/Projects/KalmanTesting/Turning";
+FolderName = "/home/ben/Projects/KalmanTesting/Forward";
 data = LoadData(FolderName,10);
 DataLength = size(data{1})(1)
 
@@ -71,7 +71,7 @@ ModelY=0;
 modelX=0;
 modelY=0;
 modelTheta=0;
-%DataLength=5
+%DataLength=3
 for x = 2:DataLength
 %for x = 400:500
 	odomX = data{1}(x);
@@ -192,17 +192,20 @@ for x = 2:DataLength
 		
 	
 	%This is the Predict the estimated covariance
-	modelSTD=eye(3).*.1;
+	modelSTD=eye(3).*.02;
 	modelSTD(3,3)=.1;
-	P=G*P*G'+modelSTD;
+	P=G*P*G'+modelSTD
 	Y = Zsensed- H*state;
-	sensorSTD = eye(4).*.02;
+	sensorSTD = eye(4).*.004;
 	sensorSTD(3,3)=.3;
 	sensorSTD(4,4) = .04;
-	S = H*P*H'+sensorSTD;
-	K=P*H'*inv(S);
-	state=state+K*Y;
-	P=(eye(3)-K*H)*P;
+	S = H*P*H'+sensorSTD
+	K=P*H'*inv(S)
+	state=state+K*Y
+	P=(eye(3)-K*H)*P
+	
+	
+	ARG(x)=P(2,1);
 	
 	%Does this need to be done
 	%state(3,1)=Angle(state(3,1));
@@ -231,8 +234,8 @@ endfor
 OdomX
 OdomY
 
-HighLimit = 0.5;
-LowLimit = -0.5;
+HighLimit = 0.00001;
+LowLimit = -0.00001;
 
 LeftLimit = 0
 RightLimit = DataLength
@@ -262,11 +265,12 @@ RightLimit = DataLength
 
 
 
-%figure(2)
-%clf()
+figure(2)
+clf()
+plot(ARG(:))
 %subplot (3, 2, 5)
 %plot(RwCD,'1')
-%axis([0,DataLength,LowLimit,HighLimit]);
+axis([0,DataLength,LowLimit,HighLimit]);
 %subplot (3, 2, 6)
 %plot(LwCD,'1')
 %axis([0,DataLength,LowLimit,HighLimit]);
