@@ -200,20 +200,17 @@ for x = 2:DataLength
 		
 	
 	%This is the Predict the estimated covariance
-	modelSTD=eye(3).*.02;
-	modelSTD(3,3)=.1;
+	modelSTD=eye(3).*.5;
 	P=G*P*G'+modelSTD
 	Y = Zsensed- H*state;
-	sensorSTD = eye(4).*.004;
-	sensorSTD(3,3)=.3;
-	sensorSTD(4,4) = .04;
+	sensorSTD = eye(4).*.5
 	S = H*P*H'+sensorSTD
 	K=P*H'*inv(S)
 	state=state+K*Y
 	P=(eye(3)-K*H)*P
 	
 
-	rP = 1;
+	rP = 4;
 	rPMO = 1 - rP; 
 	oldValue = RodomX;
 	RodomX = oldValue*rP *(rand(1)-.5) + oldValue;
@@ -223,22 +220,15 @@ for x = 2:DataLength
 	odomT= oldValue*rP *(rand(1)-.5) +oldValue;
 	oldValue = yawT;
 	yawT= oldValue*rP *(rand(1)-.5) +oldValue;
-	
-	Zsensed(3,1)= RodomX+LastX;
-	Zsensed(4,1)= -1*RodomY+LastY;
-	Zsensed(2,1)= LastTheta + odomT;
-	Zsensed(1,1)=  yawT+LastTheta;
+	Zsensed = zeros(1,1);
+	Zsensed(1,1)= LastTheta + odomT;
 
-	H = zeros(4,3);
+	H = zeros(1,3);
 	H(1,3)=1;
-	H(2,3)=1;
-	H(3,1)=1;
-	H(4,2)=1;
 
 	Y = Zsensed- H*state;
-	sensorSTD = eye(4).*.55;
-	sensorSTD(3,3)=.3;
-	sensorSTD(4,4) = .4;
+	sensorSTD = eye(1).*.02.* (rand(1)*1-.5);
+	
 	S = H*P*H'+sensorSTD
 	K=P*H'*inv(S)
 	state=state+K*Y
@@ -251,7 +241,7 @@ for x = 2:DataLength
 	
 	
 	
-	ARG(x)=P(2,1);
+	ARG(x)=P(2,2);
 	
 	%Does this need to be done
 	%state(3,1)=Angle(state(3,1));
@@ -280,8 +270,8 @@ endfor
 OdomX
 OdomY
 
-HighLimit = 0.00001;
-LowLimit = -0.00001;
+HighLimit = 1
+LowLimit = -1;
 
 LeftLimit = 0
 RightLimit = DataLength
